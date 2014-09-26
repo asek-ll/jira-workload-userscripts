@@ -1,0 +1,10 @@
+[
+  <% for(var url in urls) { %>
+    {
+url: '<%- url %>',
+       callback: function() {
+         <%- "\<% include ../src/" + urls[url] + " %\>" %>
+       }
+    },
+  <% } %>
+]

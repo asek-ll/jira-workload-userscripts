@@ -1,0 +1,48 @@
+// ==UserScript==
+// @name <%- name %>
+// @description <%- description %>
+// @author <%- author %>
+// @license MIT
+// @version 1.0
+<% for(var url in urls) {%>
+// @include <%- url %>*
+<% } %>
+// ==/UserScript==
+// [1] Оборачиваем скрипт в замыкание, для кроссбраузерности (opera, ie)
+(function (window, undefined) {  // [2] нормализуем window
+    var w;
+    if (typeof unsafeWindow !== undefined) {
+        w = unsafeWindow;
+    } else {
+        w = window;
+    }
+    // В юзерскрипты можно вставлять практически любые javascript-библиотеки.
+    // Код библиотеки копируется прямо в юзерскрипт.
+    // При подключении библиотеки нужно передать w в качестве параметра окна window
+    // Пример: подключение jquery.min.js
+    // (function(a,b){function ci(a) ... a.jQuery=a.$=d})(w);
+
+    // [3] не запускаем скрипт во фреймах
+    // без этого условия скрипт будет запускаться несколько раз на странице с фреймами
+    if (w.self != w.top) {
+        return;
+    }
+
+    var includeScriptFunction = function (func) {
+      var scriptElement = document.createElement( "script" );
+      scriptElement.type = "text/javascript";
+
+      scriptElement.textContent = '(' + func.toString() + ')();';
+
+      document.body.appendChild( scriptElement );
+    };
+
+    var sources = <% include ../dist/sources %>;
+    var i, source;
+    for (i = 0; i < sources.length; i += 1 ) {
+      source = sources[i];
+      if ((new RegExp(source.url)).test(w.location.href)) {
+        includeScriptFunction(source.callback);
+      }
+    }
+})(window);
